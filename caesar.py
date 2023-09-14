@@ -1,8 +1,18 @@
 #!/bin/env python3
+import sys
 from string import ascii_uppercase as ABC, ascii_lowercase as abc
 import argparse
 from icecream import ic
 from typing import Sequence
+
+INFO = False
+
+def print_info(m):
+    if not INFO:
+        return
+    print('INFO: ', end='', file=sys.stderr)
+    print(m, file=sys.stderr)
+
 
 def caesar(s: Sequence, k: int, decrypt: bool = False, abcp: str = ABC) -> str:
     '''Encrypt/decrypt using the Caesar cipher.
@@ -39,8 +49,10 @@ def caesar_advanced(s: Sequence, k: int, k2: str = '', decrypt: bool = False) ->
             abcp += ch
         return abcp
 
-    abcp = permute_alphabet(k2)
     k2 = str(k2).upper()
+    abcp = permute_alphabet(k2)
+
+    print_info('permuted_alphabet = {}'.format(abcp))
 
     return caesar(s, k, decrypt, abcp)
 
@@ -49,15 +61,16 @@ def caesar_advanced(s: Sequence, k: int, k2: str = '', decrypt: bool = False) ->
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         prog='Caesar cipher',
-        description='Encrypt and decrypt a text using Caesar cipher')
+        description='Encrypt or decrypt a text using the Caesar cipher')
 
     parser.add_argument('--decrypt', '-d', action='store_true')
     parser.add_argument('--key1', '-k1', type=int, required=True)
     parser.add_argument('--key2', '-k2', default='')
+    parser.add_argument('--info', '-i', action='store_true')
     parser.add_argument('text')
 
     r = parser.parse_args()
-    s, k, k2, decrypt = r.text, r.key1, r.key2, r.decrypt
+    s, k, k2, decrypt, INFO = r.text, r.key1, r.key2, r.decrypt, r.info
 
     try:
         assert(type(s) == str)
