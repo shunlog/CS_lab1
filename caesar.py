@@ -4,12 +4,11 @@ import argparse
 from icecream import ic
 from typing import Sequence
 
-def caesar(s: Sequence, k: int, k2: str = '', decrypt: bool = False) -> str:
+def caesar(s: Sequence, k: int, decrypt: bool = False, abcp: str = ABC) -> str:
     '''Encrypt/decrypt using the Caesar cipher.
 
     - s: the message, a sequence of characters in [A..Za..z ]
-    - k: the key, an int other than 0
-    - k2: the second key used to permute the alphabet, a sequence of characters in [A..Za..z ]
+    - k: the key, an int such that `k % len(abcp) != 0`
     - decrypt: True if decrypting, False if encrypting
 
     Note: `s` will be converted to all uppercase and spaces are removed
@@ -17,34 +16,34 @@ def caesar(s: Sequence, k: int, k2: str = '', decrypt: bool = False) -> str:
 
     s = str(s).upper()
     s = ''.join(ch for ch in s if ch != ' ')
-    k = k % 26
-    k2 = str(k2).upper()
-    abcp = permute_alphabet(k2)
+    n = len(abcp)
+    k = k % n
 
     assert(all(ch in abcp for ch in s))
-    assert(1 <= k <= 26)
-    assert(abcp.isupper() and all(ch in ABC for ch in abcp))
+    assert(1 <= k <= n)
 
-    trans = dict(zip(abcp, abcp[(k,26-k)[decrypt]:] + abcp[:(k,26-k)[decrypt]]))
+    trans = dict(zip(abcp, abcp[(k,n-k)[decrypt]:] + abcp[:(k,n-k)[decrypt]]))
     return ''.join(trans[L] for L in s.upper() if L in abcp)
 
 
-def permute_alphabet(key: str):
-    '''Permute the alphabet with a string key
-    - key: string of uppercase letters'''
-    abcp = ''
+def caesar_advanced(s: Sequence, k: int, k2: str = '', decrypt: bool = False) -> str:
+    '''Like Caesar's, but support a second key which permutes the alphabet.'''
 
-    for ch in key + ABC:
-        if ch in abcp:
-            continue
-        abcp += ch
+    def permute_alphabet(key: str):
+        '''Permute the alphabet with a string key
+        - key: string of uppercase letters'''
+        abcp = ''
+        for ch in key + ABC:
+            if ch in abcp:
+                continue
+            abcp += ch
+        return abcp
 
-    return abcp
+    abcp = permute_alphabet(k2)
+    k2 = str(k2).upper()
 
+    return caesar(s, k, decrypt, abcp)
 
-def caesar_helper(s: str, k: int, k2: str = '', decrypt: bool = False):
-
-    return caesar(s, k, k2, decrypt)
 
 
 if __name__ == '__main__':
@@ -85,5 +84,5 @@ if __name__ == '__main__':
     except AssertionError as e:
         parser.error("The 'k2' parameter must be a string of lating characters.")
 
-    encrypted = caesar(s, k, k2, decrypt)
+    encrypted = caesar_advanced(s, k, k2, decrypt)
     print(encrypted)
