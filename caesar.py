@@ -1,9 +1,9 @@
 #!/bin/env python3
 import sys
-from string import ascii_uppercase as ABC, ascii_lowercase as abc
 import argparse
-from icecream import ic
 import logging
+from string import ascii_uppercase as ABC, ascii_lowercase as abc
+from icecream import ic
 
 
 def caesar(s: str, k: int, decrypt: bool = False, abc: str = ABC) -> str:
