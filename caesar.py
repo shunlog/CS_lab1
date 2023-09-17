@@ -47,7 +47,6 @@ def caesar_advanced(s: Sequence, k: int, k2: str = '', decrypt: bool = False) ->
 
     logging.info('permuted_alphabet = {}'.format(abcp))
 
-
     return caesar(s, k, decrypt, abcp)
 
 
