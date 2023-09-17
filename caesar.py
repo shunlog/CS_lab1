@@ -4,14 +4,7 @@ from string import ascii_uppercase as ABC, ascii_lowercase as abc
 import argparse
 from icecream import ic
 from typing import Sequence
-
-INFO = False
-
-def print_info(m):
-    if not INFO:
-        return
-    print('INFO: ', end='', file=sys.stderr)
-    print(m, file=sys.stderr)
+import logging
 
 
 def caesar(s: Sequence, k: int, decrypt: bool = False, abcp: str = ABC) -> str:
@@ -52,10 +45,10 @@ def caesar_advanced(s: Sequence, k: int, k2: str = '', decrypt: bool = False) ->
     k2 = str(k2).upper()
     abcp = permute_alphabet(k2)
 
-    print_info('permuted_alphabet = {}'.format(abcp))
+    logging.info('permuted_alphabet = {}'.format(abcp))
+
 
     return caesar(s, k, decrypt, abcp)
-
 
 
 if __name__ == '__main__':
@@ -63,14 +56,23 @@ if __name__ == '__main__':
         prog='Caesar cipher',
         description='Encrypt or decrypt a text using the Caesar cipher')
 
-    parser.add_argument('--decrypt', '-d', action='store_true')
-    parser.add_argument('--key1', '-k1', type=int, required=True)
-    parser.add_argument('--key2', '-k2', default='')
-    parser.add_argument('--info', '-i', action='store_true')
+    parser.add_argument('--decrypt', '-d', action='store_true',
+                        help="decrypt if specified; default is encryption")
+    parser.add_argument('-k', type=int, required=True, metavar="NUM",
+                        help="the shift amount")
+    parser.add_argument('-k2', default='', metavar="WORD",
+                        help="string that defines the permutation of the alphabet")
+    parser.add_argument('--verbosity', '-v', type=int, choices=[0, 1], default=0,
+                        help="verbosity level, 0 for WARNING (default), 1 for INFO")
     parser.add_argument('text')
 
     r = parser.parse_args()
-    s, k, k2, decrypt, INFO = r.text, r.key1, r.key2, r.decrypt, r.info
+    s, k, k2, decrypt = r.text, r.k, r.k2, r.decrypt
+
+    level = (logging.WARNING, logging.INFO)[r.verbosity]
+    logging.basicConfig(format='%(levelname)s:%(message)s',
+                        level=level)
+
 
     try:
         assert(type(s) == str)
