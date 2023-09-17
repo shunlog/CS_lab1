@@ -1,4 +1,4 @@
-# CS lab 1: Caesar cipher
+# Caesar cipher
 
 ## Usage
 
