@@ -50,7 +50,6 @@ def caesar_advanced(s: str, k: int, k2: str = '', decrypt: bool = False) -> str:
             abcp += ch
         return abcp
 
-
     if k2:
         k2 = str(k2).upper()
         abcp = permute_alphabet(k2)
@@ -82,30 +81,16 @@ if __name__ == '__main__':
     logging.basicConfig(format='%(levelname)s:%(message)s',
                         level=level)
 
-    try:
-        assert(type(s) == str)
-        valid_chars = (abc + ABC + ' ')
-        assert(all(ch in valid_chars for ch in s))
-    except AssertionError:
-        parser.error("The string must contain only ASCII letters and spaces.")
+    valid_chars = (abc + ABC + ' ')
+    if not all(ch in valid_chars for ch in s):
+        parser.error("The input text can contain only ASCII letters and spaces.")
 
-    try:
-        assert(type(k) == int)
-        assert(k != 0)
-    except AssertionError:
-        parser.error("The key must be a non-zero integer.")
+    k = k % len(abc)
+    if k == 0:
+        parser.error("The key can't be 0 or a multiple of the alphabet length.")
 
-    try:
-        assert(type(decrypt) == bool)
-    except AssertionError:
-        parser.error("The 'decrypt' parameter must be a boolean.")
+    valid_chars = abc + ABC
+    if not all(ch in valid_chars for ch in k2):
+        parser.error("The second key can contain only ASCII letters and spaces.")
 
-    try:
-        assert(type(k2) == str)
-        valid_chars = abc + ABC
-        assert(all(ch in valid_chars for ch in k2))
-    except AssertionError as e:
-        parser.error("The 'k2' parameter must be a string of lating characters.")
-
-    encrypted = caesar_advanced(s, k, k2, decrypt)
-    print(encrypted)
+    print(caesar_advanced(s, k, k2, decrypt))
