@@ -3,33 +3,41 @@ import sys
 from string import ascii_uppercase as ABC, ascii_lowercase as abc
 import argparse
 from icecream import ic
-from typing import Sequence
 import logging
 
 
-def caesar(s: Sequence, k: int, decrypt: bool = False, abcp: str = ABC) -> str:
+def caesar(s: str, k: int, decrypt: bool = False, abc: str = ABC) -> str:
     '''Encrypt/decrypt using the Caesar cipher.
 
-    - s: the message, a sequence of characters in [A..Za..z ]
-    - k: the key, an int such that `k % len(abcp) != 0`
+    - s: the message, a string of characters in [A..Za..z ]
+    - k: the key, an int such that `k % len(abc) != 0`
     - decrypt: True if decrypting, False if encrypting
 
     Note: `s` will be converted to all uppercase and spaces are removed
     '''
 
-    s = str(s).upper()
-    s = ''.join(ch for ch in s if ch != ' ')
-    n = len(abcp)
-    k = k % n
+    old_s = s
+    s = s.upper()
+    if old_s != s:
+        logging.info("The input text has been converted to uppercase.")
 
-    assert(all(ch in abcp for ch in s))
-    assert(1 <= k <= n)
+    n = len(abc)
+    k = k % n # shift
 
-    trans = dict(zip(abcp, abcp[(k,n-k)[decrypt]:] + abcp[:(k,n-k)[decrypt]]))
-    return ''.join(trans[L] for L in s.upper() if L in abcp)
+    if not all(ch in abc for ch in s):
+        logging.info("Some characters are not in the alphabet and will be ignored.")
+
+    assert 1 <= k <= n
+
+    if decrypt:
+        k = n - k
+
+    trans = dict(zip(abc, abc[k:] + abc[:k]))
+    logging.debug(f"trans = {trans}")
+    return ''.join(trans[L] for L in s if L in abc)
 
 
-def caesar_advanced(s: Sequence, k: int, k2: str = '', decrypt: bool = False) -> str:
+def caesar_advanced(s: str, k: int, k2: str = '', decrypt: bool = False) -> str:
     '''Like Caesar's, but support a second key which permutes the alphabet.'''
 
     def permute_alphabet(key: str):
@@ -42,12 +50,14 @@ def caesar_advanced(s: Sequence, k: int, k2: str = '', decrypt: bool = False) ->
             abcp += ch
         return abcp
 
-    k2 = str(k2).upper()
-    abcp = permute_alphabet(k2)
 
-    logging.info('permuted_alphabet = {}'.format(abcp))
-
-    return caesar(s, k, decrypt, abcp)
+    if k2:
+        k2 = str(k2).upper()
+        abcp = permute_alphabet(k2)
+        logging.debug('permuted_alphabet = {}'.format(abcp))
+        return caesar(s, k, decrypt, abcp)
+    else:
+        return caesar(s, k, decrypt)
 
 
 if __name__ == '__main__':
@@ -61,17 +71,16 @@ if __name__ == '__main__':
                         help="the shift amount")
     parser.add_argument('-k2', default='', metavar="WORD",
                         help="string that defines the permutation of the alphabet")
-    parser.add_argument('--verbosity', '-v', type=int, choices=[0, 1], default=0,
-                        help="verbosity level, 0 for WARNING (default), 1 for INFO")
+    parser.add_argument('--verbosity', '-v', type=int, choices=[0, 1, 2], default=0,
+                        help="verbosity level, 0 for WARNING (default), 1 for INFO, 2 for DEBUG")
     parser.add_argument('text')
 
     r = parser.parse_args()
     s, k, k2, decrypt = r.text, r.k, r.k2, r.decrypt
 
-    level = (logging.WARNING, logging.INFO)[r.verbosity]
+    level = (logging.WARNING, logging.INFO, logging.DEBUG)[r.verbosity]
     logging.basicConfig(format='%(levelname)s:%(message)s',
                         level=level)
-
 
     try:
         assert(type(s) == str)
